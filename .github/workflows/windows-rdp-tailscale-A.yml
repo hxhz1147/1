@@ -14,7 +14,7 @@ jobs:
       FIXED_HOSTNAME: gha-rdp
       RDP_USER: hxhz12
       RDP_PASSWORD: qw123456@.Q
-      TAILSCALE_AUTH_KEY: tskey-auth-krYkspyN3421CNTRL-UodzYrpRmhH7S2xWd6J4hH5hQx6BGPQH
+      TAILSCALE_AUTH_KEY: tskey-auth-k4CCYdgnHD21CNTRL-B8y8pXZJK9bWLDZDa1X3AbRbVWqojvhkK
     steps:
       - name: Install Tailscale
         shell: pwsh
