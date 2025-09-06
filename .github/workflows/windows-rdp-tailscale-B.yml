@@ -1,25 +1,35 @@
 name: Windows RDP via Tailscale (B)
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      fixed_hostname:
+        description: "Tailscale hostname (MagicDNS)"
+        required: false
+        default: "gha-rdp"
+      rdp_user:
+        description: "RDP username"
+        required: false
+        default: "ghauser"
+      keep_minutes:
+        description: "Keep alive minutes (<=350)"
+        required: false
+        default: "350"
   workflow_run:
     workflows: ["Windows RDP via Tailscale (A)"]
     types: [completed]
 
-# Prevent overlapping copies of this loop from running at the same time
-concurrency:
-  group: rdp-loop
-  cancel-in-progress: true
-
 jobs:
   rdp:
     runs-on: windows-latest
-    timeout-minutes: 360        # ~6h GitHub cap
+    timeout-minutes: 360
     env:
-      FIXED_HOSTNAME: gha-rdp   # same hostname so Tailscale reuses/renames the device
-      RDP_USER: hxhz12
-      RDP_PASSWORD: qw123456@.Q
-      TAILSCALE_AUTH_KEY: tskey-auth-k4CCYdgnHD21CNTRL-B8y8pXZJK9bWLDZDa1X3AbRbVWqojvhkK
+      FIXED_HOSTNAME: ${{ github.event.inputs.fixed_hostname || 'gha-rdp' }}
+      RDP_USER:       ${{ github.event.inputs.rdp_user || 'ghauser' }}
+      RDP_PASSWORD:   ${{ secrets.RDP_PASSWORD }}            # <-- Secret
+      TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY }}  # <-- Secret
+      KEEP_MINUTES:   ${{ github.event.inputs.keep_minutes || '350' }}
+
     steps:
       - name: Install Tailscale
         shell: pwsh
@@ -56,20 +66,21 @@ jobs:
 
           $ip4 = & $ts ip -4
           $ip6 = & $ts ip -6
-
           Write-Host "================ RDP CONNECT ================"
           Write-Host "MagicDNS name : $env:FIXED_HOSTNAME"
           Write-Host "IPv4          : $ip4"
           Write-Host "IPv6          : $ip6"
           Write-Host "mstsc         : mstsc /v:$($env:FIXED_HOSTNAME)"
           Write-Host "Username      : $env:RDP_USER"
-          Write-Host "Password      : $env:RDP_PASSWORD"
+          Write-Host "Password      : ******  (GitHub Secret RDP_PASSWORD)"
           Write-Host "============================================"
 
-      - name: Keep alive (~5h 50m)
+      - name: Keep alive
         shell: pwsh
         run: |
-          $until = (Get-Date).AddMinutes(350)
+          $mins = [int]$env:KEEP_MINUTES
+          if ($mins -gt 350) { $mins = 350 }
+          $until = (Get-Date).AddMinutes($mins)
           while ((Get-Date) -lt $until) {
             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] RDP alive…"
             Start-Sleep -Seconds 300
