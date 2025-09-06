@@ -12,9 +12,9 @@ jobs:
     timeout-minutes: 360      # ~6h GitHub cap
     env:
       FIXED_HOSTNAME: gha-rdp
-      RDP_USER: Bullettemporary
-      RDP_PASSWORD: Bullet@12345
-      TAILSCALE_AUTH_KEY: tskey-auth-k9jRYku9c111CNTRL-EH6Haqd3XkDjEh1TNgKujDzgLUkQH4cP
+      RDP_USER: hxhz12
+      RDP_PASSWORD: qw123456@.Q
+      TAILSCALE_AUTH_KEY: tskey-auth-kSE8qz1jWj11CNTRL-ScXoeMoVrKEBiVEXrYAeLErafM3vMMe5
     steps:
       - name: Install Tailscale
         shell: pwsh
